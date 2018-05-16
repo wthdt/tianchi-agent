@@ -19,8 +19,8 @@ if [[ "$1" == "consumer" ]]; then
 elif [[ "$1" == "provider-small" ]]; then
   echo "Starting small provider agent..."
   java -jar \
-       -Xms256M \
-       -Xmx256M \
+       -Xms512M \
+       -Xmx512M \
        -Dtype=provider \
        -Dserver.port=30000\
        -Ddubbo.protocol.port=20889 \
@@ -30,8 +30,8 @@ elif [[ "$1" == "provider-small" ]]; then
 elif [[ "$1" == "provider-medium" ]]; then
   echo "Starting medium provider agent..."
   java -jar \
-       -Xms512M \
-       -Xmx512M \
+       -Xms1536M \
+       -Xmx1536M \
        -Dtype=provider \
        -Dserver.port=30001\
        -Ddubbo.protocol.port=20890 \
@@ -41,8 +41,8 @@ elif [[ "$1" == "provider-medium" ]]; then
 elif [[ "$1" == "provider-large" ]]; then
   echo "Starting large provider agent..."
   java -jar \
-       -Xms512M \
-       -Xmx512M \
+       -Xms2560M \
+       -Xmx2560M \
        -Dtype=provider \
        -Dserver.port=30002\
        -Ddubbo.protocol.port=20891 \
