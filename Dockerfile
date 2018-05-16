@@ -1,6 +1,6 @@
 # Builder container
-# FROM registry.cn-hangzhou.aliyuncs.com/aliware2018/services AS builder
-FROM registry.cn-hangzhou.aliyuncs.com/elemewth/tianchi-wth:v3 AS builder
+FROM registry.cn-hangzhou.aliyuncs.com/aliware2018/services AS builder
+#FROM registry.cn-hangzhou.aliyuncs.com/elemewth/tianchi-wth:v3 AS builder
 COPY . /root/workspace/agent
 WORKDIR /root/workspace/agent
 RUN set -ex && mvn clean package
