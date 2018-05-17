@@ -44,6 +44,7 @@ public class EtcdRegistry implements IRegistry{
             try {
                 int port = Integer.valueOf(System.getProperty("server.port"));
                 int balanceWeight = Integer.valueOf(System.getProperty("provideType"));
+                logger.info("balanceWeight : {}", balanceWeight);
                 register("com.alibaba.dubbo.performance.demo.provider.IHelloService",port, balanceWeight);
             } catch (Exception e) {
                 e.printStackTrace();

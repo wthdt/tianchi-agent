@@ -75,10 +75,10 @@ public class HelloController {
         }
         // 简单的负载均衡，随机取一个
         Endpoint endpoint = selectProvider();
+        logger.info("balanceWeight : {}",  Integer.valueOf(System.getProperty("provideType")));
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
         logger.info("url :{}", url);
-        logger.info("", endpoint.getBalanceWeight());
 
         RequestBody requestBody = new FormBody.Builder()
                 .add("interface",interfaceName)
@@ -108,9 +108,9 @@ public class HelloController {
 
     public static void main(String[] args){
         Integer times = 7;
-        Endpoint endpoint1 = new Endpoint("127.0.0.1", 11, "1");
-        Endpoint endpoint2 = new Endpoint("127.0.0.2", 11, "2");
-        Endpoint endpoint3 = new Endpoint("127.0.0.3", 11, "3");
+        Endpoint endpoint1 = new Endpoint("127.0.0.1", 11, "");
+        Endpoint endpoint2 = new Endpoint("127.0.0.2", 11, "");
+        Endpoint endpoint3 = new Endpoint("127.0.0.3", 11, "");
         invokersWeight.put(endpoint1, Integer.valueOf(endpoint1.getBalanceWeight()));
         invokersWeight.put(endpoint2, Integer.valueOf(endpoint2.getBalanceWeight()));
         invokersWeight.put(endpoint3, Integer.valueOf(endpoint3.getBalanceWeight()));
