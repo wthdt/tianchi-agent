@@ -3,11 +3,15 @@ package com.alibaba.dubbo.performance.demo.agent.registry;
 public class Endpoint {
     private final String host;
     private final int port;
+    private final String balanceWeight;
+    private Boolean isAvalable;
 
-    public Endpoint(String host,int port){
+    public Endpoint(String host, int port, String balanceWeight){
         this.host = host;
         this.port = port;
+        this.balanceWeight = balanceWeight;
     }
+
 
     public String getHost() {
         return host;
@@ -15,6 +19,10 @@ public class Endpoint {
 
     public int getPort() {
         return port;
+    }
+
+    public String getBalanceWeight() {
+        return balanceWeight;
     }
 
     public String toString(){

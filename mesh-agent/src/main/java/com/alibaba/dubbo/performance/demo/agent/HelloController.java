@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
+import com.alibaba.dubbo.performance.demo.agent.loadBalance.RoundRobinByWeightLoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
@@ -20,10 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @RestController
 public class HelloController {
@@ -34,10 +34,16 @@ public class HelloController {
 
     private RpcClient rpcClient = new RpcClient(registry);
     private Random random = new Random();
-    private List<Endpoint> endpoints = null;
+    private static List<Endpoint> endpoints = null;
     private Object lock = new Object();
     private OkHttpClient httpClient = new OkHttpClient();
 
+    private static Map<Endpoint, Integer> invokersWeight = new HashMap<>(3);
+
+    @PostConstruct
+    public void init(){
+        endpoints.forEach(endpoint -> invokersWeight.put(endpoint, Integer.valueOf(endpoint.getBalanceWeight())));
+    }
 
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
@@ -71,8 +77,9 @@ public class HelloController {
             }
         }
 
+
         // 简单的负载均衡，随机取一个
-        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
+        Endpoint endpoint = selectProvider();
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
 
@@ -92,6 +99,32 @@ public class HelloController {
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
             byte[] bytes = response.body().bytes();
             return JSON.parseObject(bytes, Integer.class);
+        }
+    }
+
+    private Endpoint selectProvider(){
+        RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance(invokersWeight);
+        return roundRobin.select();
+
+    }
+
+    public static void main(String[] args){
+        Integer times = 7;
+        Endpoint endpoint1 = new Endpoint("127.0.0.1", 11, "1");
+        Endpoint endpoint2 = new Endpoint("127.0.0.2", 11, "2");
+        Endpoint endpoint3 = new Endpoint("127.0.0.3", 11, "3");
+        invokersWeight.put(endpoint1, Integer.valueOf(endpoint1.getBalanceWeight()));
+        invokersWeight.put(endpoint2, Integer.valueOf(endpoint2.getBalanceWeight()));
+        invokersWeight.put(endpoint3, Integer.valueOf(endpoint3.getBalanceWeight()));
+
+        RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance(invokersWeight);
+        for (int i = 1; i <= times; i++) {
+            System.out.print(new StringBuffer(i + "").append("    "));
+            roundRobin.printCurrenctWeightBeforeSelect();
+            Endpoint endpoint= roundRobin.select();
+            System.out.print(new StringBuffer("    ").append(endpoint.getHost()).append("    "));
+            roundRobin.printCurrenctWeight();
+            System.out.println();
         }
     }
 }
