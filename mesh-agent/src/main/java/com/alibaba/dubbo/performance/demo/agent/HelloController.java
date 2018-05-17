@@ -78,6 +78,8 @@ public class HelloController {
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
         logger.info("url :{}", url);
+        logger.info("", endpoint.getBalanceWeight());
+
         RequestBody requestBody = new FormBody.Builder()
                 .add("interface",interfaceName)
                 .add("method",method)
