@@ -93,7 +93,8 @@ public class HelloController {
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
             byte[] bytes = response.body().bytes();
-            return JSON.parseObject(bytes, Integer.class);
+            String s = new String(bytes);
+            return Integer.valueOf(s);
         }
     }
 
