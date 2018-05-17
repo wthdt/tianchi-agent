@@ -75,7 +75,6 @@ public class HelloController {
         }
         // 简单的负载均衡，随机取一个
         Endpoint endpoint = selectProvider();
-        logger.info("balanceWeight : {}",  Integer.valueOf(System.getProperty("provideType")));
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
         logger.info("url :{}", url);
@@ -108,13 +107,13 @@ public class HelloController {
 
     public static void main(String[] args){
         Integer times = 7;
-        Endpoint endpoint1 = new Endpoint("127.0.0.1", 11, "");
-        Endpoint endpoint2 = new Endpoint("127.0.0.2", 11, "");
-        Endpoint endpoint3 = new Endpoint("127.0.0.3", 11, "");
+        Endpoint endpoint1 = new Endpoint("127.0.0.1", 11, "1");
+        Endpoint endpoint2 = new Endpoint("127.0.0.2", 11, "2");
+        Endpoint endpoint3 = new Endpoint("127.0.0.3", 11, "3");
         invokersWeight.put(endpoint1, Integer.valueOf(endpoint1.getBalanceWeight()));
         invokersWeight.put(endpoint2, Integer.valueOf(endpoint2.getBalanceWeight()));
         invokersWeight.put(endpoint3, Integer.valueOf(endpoint3.getBalanceWeight()));
-
+        int provide = Integer.valueOf(System.getProperty("provideType"));
         RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance(invokersWeight);
         for (int i = 1; i <= times; i++) {
             System.out.print(new StringBuffer(i + "").append("    "));
