@@ -77,7 +77,7 @@ public class HelloController {
         Endpoint endpoint = selectProvider();
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
-
+        logger.info("url :{}", url);
         RequestBody requestBody = new FormBody.Builder()
                 .add("interface",interfaceName)
                 .add("method",method)
