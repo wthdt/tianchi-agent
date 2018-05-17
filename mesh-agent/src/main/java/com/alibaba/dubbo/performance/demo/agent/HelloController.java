@@ -33,17 +33,11 @@ public class HelloController {
     private IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
 
     private RpcClient rpcClient = new RpcClient(registry);
-    private Random random = new Random();
     private static List<Endpoint> endpoints = null;
     private Object lock = new Object();
     private OkHttpClient httpClient = new OkHttpClient();
 
     private static Map<Endpoint, Integer> invokersWeight = new HashMap<>(3);
-
-    @PostConstruct
-    public void init(){
-        endpoints.forEach(endpoint -> invokersWeight.put(endpoint, Integer.valueOf(endpoint.getBalanceWeight())));
-    }
 
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
@@ -76,8 +70,9 @@ public class HelloController {
                 }
             }
         }
-
-
+        if(invokersWeight.isEmpty() || invokersWeight.size()==0) {
+            endpoints.forEach(endpoint -> invokersWeight.put(endpoint, Integer.valueOf(endpoint.getBalanceWeight())));
+        }
         // 简单的负载均衡，随机取一个
         Endpoint endpoint = selectProvider();
 
