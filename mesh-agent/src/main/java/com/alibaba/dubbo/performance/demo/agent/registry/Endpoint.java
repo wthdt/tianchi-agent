@@ -3,7 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.registry;
 public class Endpoint {
     private final String host;
     private final int port;
-    private final String balanceWeight;
+    private String balanceWeight;
     private Boolean isAvalable;
 
     public Endpoint(String host, int port, String balanceWeight){
@@ -23,6 +23,10 @@ public class Endpoint {
 
     public String getBalanceWeight() {
         return balanceWeight;
+    }
+
+    public void setBalanceWeight(String balanceWeight) {
+        this.balanceWeight = balanceWeight;
     }
 
     public String toString(){

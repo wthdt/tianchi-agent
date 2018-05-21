@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.loadBalance;
 
+import com.alibaba.dubbo.performance.demo.agent.cache.CacheManager;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 
 import java.util.*;
@@ -67,6 +68,7 @@ public class RoundRobinByWeightLoadBalance {
             } else {
                 nodeOfMaxWeight = nodeOfMaxWeight.compareTo(node) > 0 ? nodeOfMaxWeight : node;
             }
+            CacheManager.putCache(node.endpoint, node.currentWeight);
         }
 
         nodeOfMaxWeight.currentWeight -= total;
