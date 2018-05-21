@@ -27,6 +27,8 @@ public class HelloController {
     private List<Endpoint> endpoints = null;
     private Object lock = new Object();
     private OkHttpClient httpClient = new OkHttpClient();
+    private Random random = new Random();
+
     private RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance();
 
 
@@ -66,7 +68,8 @@ public class HelloController {
         logger.info("endpoints is size: {}", endpoints);
 
         // 简单的负载均衡，随机取一个
-        Endpoint endpoint = selectProvider();
+//        Endpoint endpoint = selectProvider();
+        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
         logger.info("url :{}", url);
