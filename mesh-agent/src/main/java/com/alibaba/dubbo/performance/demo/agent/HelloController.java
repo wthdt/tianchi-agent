@@ -103,7 +103,7 @@ public class HelloController {
     public static void main(String[] args){
         Endpoint endpoint1 = new Endpoint("127.0.0.1", 11, "1");
         Endpoint endpoint2 = new Endpoint("127.0.0.2", 11, "2");
-        Endpoint endpoint3 = new Endpoint("127.0.0.3", 11, "3");
+        Endpoint endpoint3 = new Endpoint("127.0.0.3", 11, "5");
         List<Endpoint> endpoints = new ArrayList<>();
         endpoints.add(endpoint1);
         endpoints.add(endpoint2);
