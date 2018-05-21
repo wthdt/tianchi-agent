@@ -27,7 +27,7 @@ public class HelloController {
     private List<Endpoint> endpoints = null;
     private Object lock = new Object();
     private OkHttpClient httpClient = new OkHttpClient();
-    private static RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance(CacheManager.getInstance());
+    private RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance();
 
 
     @RequestMapping(value = "")
@@ -106,5 +106,10 @@ public class HelloController {
         endpoints.add(endpoint2);
         endpoints.add(endpoint3);
         CacheManager.initCache(endpoints);
+        RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance();
+        for (int i = 0; i < 10; i++) {
+            Endpoint endpoint = roundRobin.select();
+            System.out.println("endpoint host: "+ endpoint.getHost());
+        }
     }
 }

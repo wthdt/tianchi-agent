@@ -40,6 +40,7 @@ public class CacheManager {
      */
      public static void initCache(List<Endpoint> endpoints) {
          endpoints.forEach(endpoint -> cacheMap.put(endpoint, Integer.valueOf(endpoint.getBalanceWeight())));
+
     }
 
     public static void putCache(Endpoint endpoint, Integer currentWeight){

@@ -4,6 +4,7 @@ import com.alibaba.dubbo.performance.demo.agent.cache.CacheManager;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by 王天华 on 2018/5/16.
@@ -33,14 +34,9 @@ public class RoundRobinByWeightLoadBalance {
      * 3. 对于本次选定的后端，执行：peer->current_weight -= total。
      */
     //约定的invoker和权重的键值对
-    final private List<Node> nodes;
 
-    public RoundRobinByWeightLoadBalance(Map<Endpoint, Integer> invokersWeight) {
-        if (invokersWeight != null && !invokersWeight.isEmpty()) {
-            nodes = new ArrayList<>(invokersWeight.size());
-            invokersWeight.forEach((invoker, weight) -> nodes.add(new Node(invoker, weight)));
-        } else
-            nodes = null;
+    public RoundRobinByWeightLoadBalance() {
+
     }
 
     /**
@@ -54,82 +50,24 @@ public class RoundRobinByWeightLoadBalance {
      * @Return ivoker
      */
     public Endpoint select() {
-        if (!checkNodes()){
-            return null;
-        }
+
         Integer total = 0;
-        Node nodeOfMaxWeight = null;
-        for (Node node : nodes) {
-            total += node.effectiveWeight;
-            node.currentWeight += node.effectiveWeight;
-
-            if (nodeOfMaxWeight == null) {
-                nodeOfMaxWeight = node;
-            } else {
-                nodeOfMaxWeight = nodeOfMaxWeight.compareTo(node) > 0 ? nodeOfMaxWeight : node;
+        Endpoint nodeOfMaxWeight = null;
+        ConcurrentHashMap<Endpoint, Integer> invokersWeight = CacheManager.getInstance();
+        Integer valueMax = Integer.MIN_VALUE;
+        for(Map.Entry<Endpoint, Integer> entry: invokersWeight.entrySet()) {
+            total += Integer.valueOf(entry.getKey().getBalanceWeight());
+            Integer value  = entry.getValue() + Integer.valueOf(entry.getKey().getBalanceWeight());
+            if(value > valueMax){
+                nodeOfMaxWeight = entry.getKey();
+                valueMax = value;
             }
-            CacheManager.putCache(node.endpoint, node.currentWeight);
+            CacheManager.putCache(entry.getKey(), value);
         }
 
-        nodeOfMaxWeight.currentWeight -= total;
-        return nodeOfMaxWeight.endpoint;
+        int value = CacheManager.getCache(nodeOfMaxWeight);
+        CacheManager.putCache(nodeOfMaxWeight, value-total);
+        return nodeOfMaxWeight;
     }
 
-
-
-    private boolean checkNodes() {
-        return (nodes != null && nodes.size() > 0);
-    }
-
-    public void printCurrenctWeightBeforeSelect() {
-        if (checkNodes()) {
-            final StringBuffer out = new StringBuffer("{");
-            nodes.forEach(node -> out.append(node.endpoint.getHost())
-                    .append("=")
-                    .append(node.currentWeight + node.effectiveWeight)
-                    .append(","));
-            out.append("}");
-            System.out.print(out);
-        }
-    }
-
-    public void printCurrenctWeight() {
-        if (checkNodes()) {
-            final StringBuffer out = new StringBuffer("{");
-            nodes.forEach(node -> out.append(node.endpoint.getHost())
-                    .append("=")
-                    .append(node.currentWeight)
-                    .append(","));
-            out.append("}");
-            System.out.print(out);
-        }
-    }
-
-    private static class Node implements Comparable<Node> {
-        final Endpoint endpoint;
-        final Integer weight;
-        Integer effectiveWeight;
-        Integer currentWeight;
-
-        Node(Endpoint endpoint, Integer weight) {
-            this.endpoint = endpoint;
-            this.weight = weight;
-            this.effectiveWeight = weight;
-            this.currentWeight = 0;
-        }
-
-        @Override
-        public int compareTo(Node o) {
-            return currentWeight > o.currentWeight ? 1 : (currentWeight.equals(o.currentWeight) ? 0 : -1);
-        }
-
-        public void onInvokeSuccess() {
-            if (effectiveWeight < this.weight)
-                effectiveWeight++;
-        }
-
-        public void onInvokeFail() {
-            effectiveWeight--;
-        }
-    }
 }
