@@ -32,8 +32,8 @@ public class HelloController {
     private OkHttpClient httpClient = new OkHttpClient();
     private Random random = new Random();
 
-    private RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance();
-    WeightRandom<Endpoint, Double> weightRandom;
+//    private RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance();
+    private WeightRandom<Endpoint, Double> weightRandom;
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
                          @RequestParam("method") String method,
@@ -70,7 +70,7 @@ public class HelloController {
         }
 
 
-        logger.info("endpoints is size: {}", endpoints);
+//        logger.info("endpoints is size: {}", endpoints);
 
         // 简单的负载均衡，随机取一个
 //        Endpoint endpoint = selectProvider();
@@ -79,8 +79,8 @@ public class HelloController {
         Endpoint endpoint = weightRandom.random();
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
-        logger.info("url :{}", url);
-        logger.info("currentWeight :{}", CacheManager.getCache(endpoint));
+//        logger.info("url :{}", url);
+//        logger.info("currentWeight :{}", CacheManager.getCache(endpoint));
 
         RequestBody requestBody = new FormBody.Builder()
                 .add("interface",interfaceName)
@@ -106,10 +106,10 @@ public class HelloController {
         Pair<Endpoint, Double> pair = new Pair<>(endpoint, Double.valueOf(endpoint.getBalanceWeight()));
         pairs.add(pair);
     }
-    private Endpoint selectProvider(){
-        return roundRobin.select();
-
-    }
+//    private Endpoint selectProvider(){
+//        return roundRobin.select();
+//
+//    }
 
     public static void main(String[] args){
         Endpoint endpoint1 = new Endpoint("127.0.0.1", 11, "1");
