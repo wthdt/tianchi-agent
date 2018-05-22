@@ -3,10 +3,13 @@ package com.alibaba.dubbo.performance.demo.agent;
 import com.alibaba.dubbo.performance.demo.agent.cache.CacheManager;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.loadBalance.RoundRobinByWeightLoadBalance;
+import com.alibaba.dubbo.performance.demo.agent.loadBalance.WeightRandom;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
+import com.google.common.collect.Lists;
 import okhttp3.*;
+import org.apache.commons.math3.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,8 +33,7 @@ public class HelloController {
     private Random random = new Random();
 
     private RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance();
-
-
+    WeightRandom<Endpoint, Double> weightRandom;
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
                          @RequestParam("method") String method,
@@ -60,16 +62,21 @@ public class HelloController {
             synchronized (lock){
                 if (null == endpoints){
                     endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
-                    CacheManager.initCache(endpoints);
+                    List<Pair<Endpoint, Double>> pairs = new ArrayList<>();
+                    endpoints.forEach(endpoint -> buildPairs(endpoint, pairs));
+                    weightRandom = new WeightRandom(pairs);
                 }
             }
         }
 
+
         logger.info("endpoints is size: {}", endpoints);
 
         // 简单的负载均衡，随机取一个
-        Endpoint endpoint = selectProvider();
+//        Endpoint endpoint = selectProvider();
 //        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
+
+        Endpoint endpoint = weightRandom.random();
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
         logger.info("url :{}", url);
@@ -95,6 +102,10 @@ public class HelloController {
         }
     }
 
+    private void buildPairs(Endpoint endpoint, List<Pair<Endpoint, Double>> pairs){
+        Pair<Endpoint, Double> pair = new Pair<>(endpoint, Double.valueOf(endpoint.getBalanceWeight()));
+        pairs.add(pair);
+    }
     private Endpoint selectProvider(){
         return roundRobin.select();
 
